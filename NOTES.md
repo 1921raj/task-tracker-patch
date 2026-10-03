@@ -1,7 +1,17 @@
 # Patch notes
 
-- Fixed task search so archive and status filters apply to both title and description matches. Moved pagination into the database query, validated page parameters/status, and removed the artificial per-request delay.
-- Aborted obsolete frontend search requests and reset pagination when filters change, preventing stale results and empty pages after narrowing a search.
-- Left task creation, authentication, and broader performance work unchanged; they are outside the current read-only search flow. The largest remaining risk is that the schema has no indexes, so substring searches can become slow as the task table grows.
-- I used GitHub Copilot to inspect the frontend, Spring repository/controller, and SQL reference; I reviewed the changes and exercised the API/build locally.
-- Handwritten explanation photos are not included; I cannot produce authentic handwritten notes. Add your own photos under `handwritten/` before submission.
+## Changes
+
+- Corrected the task-search predicates in the Spring repository, H2 SQL reference, and Oracle package. Explicit grouping ensures archived tasks stay excluded and the optional status filter applies to matches in either the title or description.
+- Replaced in-memory slicing with Spring Data database pagination and a matching count query. The API rejects invalid page values, page sizes over 100, and unknown statuses, and no longer adds an artificial delay to requests.
+- The frontend now aborts superseded fetches so a slow response cannot replace newer search results. Changing the search or status filter returns the view to page 1.
+
+## Scope and remaining risk
+
+I left write operations, authentication, and other future-risk areas untouched to keep this patch focused on the existing read-only search experience. Substring matching can still become slow as the task table grows; the schema currently has no search indexes.
+
+## Tools and verification
+
+I used GitHub Copilot to inspect the React, Spring, and SQL paths, then reviewed the patch. `npm run build` succeeded. I ran both local servers and checked search filters, database pagination, the Vite API proxy, and 400 responses for invalid parameters.
+
+Handwritten explanation photos are not included. Add your own handwritten notes under `handwritten/` before submission.
